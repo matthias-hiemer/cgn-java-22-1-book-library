@@ -14,6 +14,6 @@ public class BookLibraryApplication {
 
     @Bean
     public WebClient getWebClientBean() {
-        return WebClient.create();
+        return WebClient.create("https://my-json-server.typicode.com/Flooooooooooorian/BookApi");
     }
 }

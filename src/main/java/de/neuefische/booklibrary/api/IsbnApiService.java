@@ -16,7 +16,7 @@ public class IsbnApiService {
 
     public Book retrieveBookByIsbn(String isbn) {
         IsbnBook isbnBook =  webClient.get()
-                .uri("https://my-json-server.typicode.com/Flooooooooooorian/BookApi/books/" + isbn)
+                .uri("/books/" + isbn)
                 .retrieve()
                 .toEntity(IsbnBook.class)
                 .block()
