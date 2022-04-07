@@ -20,26 +20,28 @@ class BookControllerTest {
     private int port;
 
     @Autowired
-    private WebTestClient testClient;
+    private WebTestClient webTestClient;
 
     @Autowired
     private BookRepository bookRepository;
 
+    private Book book1 = new Book("123", "test-title-1");
+    private Book book2 = new Book("1234", "test-title-2");
+
     @BeforeEach
     public void cleanUp() {
-        bookRepository.deleteAll();
+
     }
 
     @Test
     void getAllBooks() {
         //GIVEN
-        Book book1 = new Book("1234", "test-title");
         bookRepository.addBook(book1);
+        bookRepository.addBook(book2);
 
         //WHEN
-
-        List<Book> actual = testClient.get()
-                .uri("/book")
+        List<Book> actual = webTestClient.get()
+                .uri("http://localhost:" + port + "/book")
                 .exchange()
                 .expectStatus().is2xxSuccessful()
                 .expectBodyList(Book.class)
@@ -47,19 +49,19 @@ class BookControllerTest {
                 .getResponseBody();
 
         //THEN
-        List<Book> expected = List.of(new Book("1234", "test-title"));
+        List<Book> expected = List.of(new Book("123", "test-title-1"), book2);
+
         assertEquals(expected, actual);
     }
 
     @Test
     void addBook() {
         //GIVEN
-        Book book = new Book("1234", "test-title");
-
         //WHEN
-        Book actual = testClient.post()
-                .uri("http://localhost:" + port + "/book")
-                .bodyValue(book)
+
+        Book actual = webTestClient.post()
+                .uri("/book")
+                .bodyValue(book1)
                 .exchange()
                 .expectStatus().is2xxSuccessful()
                 .expectBody(Book.class)
@@ -67,8 +69,20 @@ class BookControllerTest {
                 .getResponseBody();
 
         //THEN
-
-        Book expected = new Book("1234", "test-title");
+        Book expected = new Book("123", "test-title-1");
         assertEquals(expected, actual);
+    }
+
+    @Test
+    void getBookByIsbn_whenInvalidIsbn_thenThrowException() {
+        //GIVEN
+        //WHEN
+
+        webTestClient.get()
+                .uri("/book/invalid-isbn")
+                .exchange()
+                .expectStatus().is5xxServerError();
+
+        //THEN
     }
 }
