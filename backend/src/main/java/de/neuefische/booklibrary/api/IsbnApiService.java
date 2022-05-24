@@ -2,6 +2,7 @@ package de.neuefische.booklibrary.api;
 
 import de.neuefische.booklibrary.model.Book;
 import de.neuefische.booklibrary.model.IsbnBook;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -10,13 +11,16 @@ public class IsbnApiService {
 
     private final WebClient webClient;
 
+    @Value("${neuefische.de.isbn.baseurl}")
+    private String baseUrl;
+
     public IsbnApiService(WebClient webClient) {
         this.webClient = webClient;
     }
 
     public Book retrieveBookByIsbn(String isbn) {
         IsbnBook isbnBook =  webClient.get()
-                .uri("https://my-json-server.typicode.com/Flooooooooooorian/BookApi/books/" + isbn)
+                .uri(baseUrl + "/BookApi/books/" + isbn)
                 .retrieve()
                 .toEntity(IsbnBook.class)
                 .block()
