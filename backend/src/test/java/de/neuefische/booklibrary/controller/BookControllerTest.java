@@ -1,5 +1,6 @@
 package de.neuefische.booklibrary.controller;
 
+import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import de.neuefische.booklibrary.model.Book;
 import de.neuefische.booklibrary.repository.BookRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,8 +12,10 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.util.List;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.junit.jupiter.api.Assertions.*;
 
+@WireMockTest(httpPort = 8484)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class BookControllerTest {
 
@@ -69,6 +72,34 @@ class BookControllerTest {
         //THEN
 
         Book expected = new Book("1234", "test-title");
+        assertEquals(expected, actual);
+    }
+
+
+    @Test
+    void addBookByIsbn() {
+        //GIVEN
+        stubFor(get("/BookApi/books/978-3-8362-8745-6").willReturn(okJson("""
+                {
+                    "id": "978-3-8362-8745-6",
+                    "title": "Java ist auch eine Insel!",
+                    "author": "Christian Ullenboom"
+                  }
+                """)));
+
+
+        //WHEN
+        Book actual = testClient.put()
+                .uri("http://localhost:" + port + "/book/" + "978-3-8362-8745-6")
+                .exchange()
+                .expectStatus().is2xxSuccessful()
+                .expectBody(Book.class)
+                .returnResult()
+                .getResponseBody();
+
+        //THEN
+
+        Book expected = new Book("978-3-8362-8745-6", "Java ist auch eine Insel!");
         assertEquals(expected, actual);
     }
 }
